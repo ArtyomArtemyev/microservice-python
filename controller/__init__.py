@@ -1,55 +1,68 @@
-import service
-
-# For inishialize database
-import pymongo
-
-from flask import Flask, jsonify
-from flasgger import Swagger
+from json import JSONDecoder
 from http import HTTPStatus
+from flask import Flask, jsonify, request, abort
+from flasgger import Swagger
+
+import service
+from domain import Men
+from service import getAll
+import jsonpickle
 
 app = Flask(__name__)
 swaggger = Swagger(app)
 
-@app.route('/mens')
-def getAll():
+@app.route('/api/v1.0/mens', methods=['GET'])
+def get_mens():
     """
-   Get a list of mens
-   ---
-   tags:
-     - mens
-   definitions:
-     Men:
-       type: object
-       properties:
-         _id:
-           type: string
-         name:
-           type: string
-         surname:
-           type: string
-   responses:
-     200:
-       description: Returns a list of mens
-       schema:
-         id: Mens
-         type: object
-         properties:
-           users:
-             type: array
-             items:
-               $ref: '#/definitions/Men'
-       examples:
-         users: [{'_id': '1', 'name': 'Russel', 'surname': 'Allen'}]
-           """
-    return jsonify(service.getAll()), HTTPStatus.OK
+      Get a list of mens
+      ---
+      tags:
+        - mens
+      definitions:
+        Men:
+          type: object
+          properties:
+            _id:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            done:
+              type: bool
+    """
+    response = jsonpickle.encode(getAll())
+    return response
+
+@app.route('/api/v1.0/mens', methods=['POST'])
+def add_men():
+    """
+      Create a new man
+      ---
+      tags:
+        - mens
+      parameters:
+        - in: body
+          name: body
+      definitions:
+        Men:
+          type: object
+          properties:
+            _id:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            done:
+              type: bool
+    """
+    men = Men('19', request.json['name'], request.json['surname'])
+    service.save(men)
+    response = jsonpickle.encode(men)
+    return response
+
+
 
 if __name__ == '__main__':
-
-    # Inishialize database
-    # conn = pymongo.Connection('localhost', 27017)
-    # db = conn.mydb
-    # coll = db.mycoll
-    # doc = {"name": "Петр", "surname": "Иванов"}
-    # coll.save(doc)
-
-    app.run()
+    app.run(debug=True)

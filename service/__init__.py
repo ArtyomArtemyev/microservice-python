@@ -1,4 +1,7 @@
+
+
 import dao
+import domain
 
 def get_database():
     connection = dao.get_connection()
@@ -10,14 +13,15 @@ def get_collection():
     return collection
 
 def save(obj):
-    get_collection().save(obj)
+    men = {"name": obj.name, "surname": obj.surname}
+    get_collection().save(men)
 
 def getAll():
     List = []
-    for men in get_collection().find():
+    for element in get_collection().find():
+        men = domain.Men(element['_id'], element['name'], element['surname'])
         List.append(men)
-        return List
-
+    return List
 
 
 
